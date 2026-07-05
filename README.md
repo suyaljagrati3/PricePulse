@@ -115,6 +115,20 @@ Each model was evaluated using standard forecasting metrics to identify the best
 
 ![Dashboard](assets/dashboard_home.png)
 
+![Dashboard](assets/dashboard_market.png)
+
+![Dashboard](assets/dashboard_shopkeeper.png)
+
+![Dashboard](assets/season_festive_analysis.png)
+
+![Dashboard](assets/rolling_correlation.png)
+
+![Dashboard](assets/model_accuracy_summary.png)
+
+![Dashboard](assets/mape_heatmap.png)
+
+
+![Dashboard](assets/forecast_example.png)
 
 
 ↓
