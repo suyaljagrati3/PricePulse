@@ -203,7 +203,7 @@ PricePulse/
 Clone the repository.
 
 ```bash
-git clone https://github.com/yourusername/PricePulse.git
+git clone https://github.com/suyaljagrati3/PricePulse.git
 ```
 
 Move into the project folder.
