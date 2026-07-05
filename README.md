@@ -195,7 +195,7 @@ PricePulse/
 ├── forecasting_pipeline.py
 ├── requirements.txt
 ├── README.md
-└── LICENSE
+
 ```
 
 # 🚀 Installation
