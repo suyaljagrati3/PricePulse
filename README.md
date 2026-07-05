@@ -98,6 +98,45 @@ The project analyzes historical prices of essential commodities collected from m
 The datasets were cleaned, preprocessed, and transformed before analysis and forecasting.
 
 
+---
+# 👥 Dashboard Modules
+
+## 🏠 Household Dashboard
+Provides price trends and buying recommendations to help consumers identify the best time to purchase essential commodities.
+
+![Dashboard](assets/dashboard_home.png)
+
+---
+
+## 📈 Market Overview
+Displays market-wide analytics, commodity comparisons, inflation trends, and forecasting insights.
+![Dashboard](assets/dashboard_market.png)
+
+
+---
+
+## 🏪 Shopkeeper Dashboard
+Provides inventory recommendations by analyzing price trends and expected demand movement.
+
+![Dashboard](assets/dashboard_shopkeeper.png)
+
+---
+
+# 📊 Exploratory Data Analysis
+## Season & Festival Analysis
+This analysis studies the influence of seasonal changes and festivals on commodity prices.
+
+![Dashboard](assets/season_festive_analysis.png)
+
+---
+
+## Rolling Correlation Analysis
+Rolling correlation captures how relationships between commodities evolve over time.
+
+![Dashboard](assets/rolling_correlation.png)
+
+---
+
 ## 🤖Forecasting Models
 
 The following forecasting techniques were implemented and compared:
@@ -113,52 +152,120 @@ The following forecasting techniques were implemented and compared:
 Each model was evaluated using standard forecasting metrics to identify the best-performing approach for different commodity categories.
 
 
-![Dashboard](assets/dashboard_home.png)
+---
 
-![Dashboard](assets/dashboard_market.png)
-
-![Dashboard](assets/dashboard_shopkeeper.png)
-
-![Dashboard](assets/season_festive_analysis.png)
-
-![Dashboard](assets/rolling_correlation.png)
-
+# 📈 Model Performance
+Forecasting models were evaluated using MAE, RMSE, MAPE, and SMAPE.
+Rather than relying on a single forecasting algorithm, the project compares multiple models and automatically identifies the best-performing model for each commodity.
 ![Dashboard](assets/model_accuracy_summary.png)
 
+---
+
+## MAPE Heatmap
+The heatmap provides a commodity-wise comparison of forecasting performance across all implemented models.
 ![Dashboard](assets/mape_heatmap.png)
 
+---
 
+## Forecast Example
+Example forecast generated using the best-performing model for Fuel Pric
 ![Dashboard](assets/forecast_example.png)
 
+---
 
-↓
+# 🔍 Key Findings
+- Different commodities require different forecasting models.
+- XGBoost consistently achieved high forecasting accuracy across multiple commodities.
+- SARIMA remained competitive for stable price series.
+- Onion and Tomato prices exhibited the highest forecasting difficulty due to greater volatility.
+- Seasonal and festival effects influenced commodity prices differently.
+- Rolling correlation highlighted evolving relationships among commodities over time.
 
-Home Dashboard Image
+---
 
-↓
 
-Market Overview Image
+# 📂 Project Structure
 
-↓
+```text
+PricePulse/
+│
+├── assets/
+├── datasets/
+├── app.py
+├── forecasting_pipeline.py
+├── requirements.txt
+├── README.md
+└── LICENSE
+```
 
-Shopkeeper Dashboard
+# 🚀 Installation
 
-↓
+Clone the repository.
 
-Season Analysis
+```bash
+git clone https://github.com/yourusername/PricePulse.git
+```
 
-↓
+Move into the project folder.
 
-Rolling Correlation
+```bash
+cd PricePulse
+```
 
-↓
+Install the required dependencies.
 
-Model Accuracy
+```bash
+pip install -r requirements.txt
+```
 
-↓
+---
 
-Heatmap
 
-↓
+# ▶️ Running the Project
 
-Forecast Example
+Run the forecasting pipeline.
+
+```bash
+python forecasting_pipeline.py
+```
+
+Launch the Streamlit dashboard.
+
+```bash
+streamlit run app.py
+```
+
+---
+
+# 🔮Future Improvements
+- Deep Learning-based forecasting models
+- Transformer-based time-series forecasting
+- Live commodity price APIs
+- Automatic model retraining
+- Cloud deployment
+- Integration with macroeconomic indicators
+
+---
+
+
+# 👩‍💻 My Contribution
+This project was developed as part of my undergraduate coursework.
+My primary contributions included:
+- Conducting a literature review on inflation forecasting and commodity price prediction.
+- Designing the end-to-end analytical workflow and forecasting pipeline.
+- Comparing statistical and machine learning forecasting models.
+- Performing exploratory data analysis, feature engineering, and visualization.
+- Developing the Streamlit dashboard for interactive data exploration.
+- Interpreting forecasting results and documenting key insights.
+
+---
+
+# 📄 License
+This project is licensed under the MIT License.
+
+---
+
+# 🙏 Acknowledgements
+This project was inspired by research in time-series forecasting and commodity price prediction. I studied multiple research papers to understand forecasting techniques, feature engineering, and evaluation strategies before designing this project.
+
+I would also like to thank my faculty and teammate for her collaboration throughout the project.

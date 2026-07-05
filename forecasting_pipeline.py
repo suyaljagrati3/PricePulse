@@ -496,23 +496,6 @@ def forecast_random_forest(series, steps, series_name="Series", lag_max=6,
     print("    Random Forest complete")
     return preds, preds*0.92, preds*1.08
 
-def rolling_forecast_sarima(series, dates, test_size=6):
-    print("    Running Rolling Walk-Forward Forecast...")
-    if len(series) < test_size + 4:
-        raise RuntimeError(f"Too short for rolling forecast (n={len(series)})")
-    d = get_d(series); S = safe_periodicity(len(series) - test_size)
-    preds, actuals = [], []
-    train_end = len(series) - test_size
-    for i in range(test_size):
-        train = series[:train_end+i]; actual_val = series[train_end+i]
-        fit = fit_sarima_safe(pd.Series(train).reset_index(drop=True), (1,d,1),
-                              (1,1,1,S) if S >= 2 else (0,0,0,0))
-        pred = fit.forecast(steps=1).iloc[0] if fit else np.mean(train[-3:])
-        preds.append(pred); actuals.append(actual_val)
-        print(f"      Step {i+1}/{test_size}: actual={actual_val:.2f}  pred={pred:.2f}  err={abs(actual_val-pred):.2f}")
-    print("    Rolling Forecast complete")
-    return np.array(preds), np.array(actuals), dates.iloc[train_end:train_end+test_size]
-
 def remove_outliers(series, method="iqr"):
     s = series.copy().astype(float)
     if method == "iqr":
@@ -871,111 +854,13 @@ if pairs:
 
 # ── 05b Correlation matrix ────────────────────────────────────────
 print("05b Correlation matrix...")
-fig5b, ax5b = plt.subplots(figsize=(14,12))
+fig5b, ax5b = plt.subplots(figsize=(16,12))
 corr_mat = merged_all.corr()
-mask = np.triu(np.ones_like(corr_mat, dtype=bool))
+mask = np.triu(np.ones_like(corr_mat, dtype=bool) , k=1)
 sns.heatmap(corr_mat, ax=ax5b, mask=mask, cmap="RdYlGn", center=0,
             annot=True, fmt=".2f", square=True, linewidths=0.5, cbar_kws={"shrink":0.8})
-ax5b.set_title("Correlation Matrix — All Price Series", pad=15, fontweight="bold")
+ax5b.set_title("Correlation Matrix — All Price Series", pad=20, fontweight="bold")
 plt.tight_layout(); plt.show()
-
-# ══════════════════════════════════════════════════════════════════
-# 05c — LAG CORRELATION ON FIRST DIFFERENCES (not raw price)
-# ══════════════════════════════════════════════════════════════════
-print("\n05c Lag Correlation Analysis on First Differences (Δ Price)...")
-
-# Build differenced series — removes non-stationarity, isolates change signals
-diff_all = merged_all.diff().dropna()
-
-strong_pairs = []
-cols_list = list(diff_all.columns)
-for i in range(len(cols_list)):
-    for j in range(i+1, len(cols_list)):
-        r = diff_all[cols_list[i]].corr(diff_all[cols_list[j]])
-        if abs(r) > 0.35:   # lower threshold since diffs are noisier
-            strong_pairs.append((cols_list[i], cols_list[j], round(r, 3)))
-
-# Always include key pairs of interest
-known_pairs = [("Fuel_Price","Tea"), ("Fuel_Price","Salt"), ("Fuel_Price","Gram"),
-               ("Onion_Price","Tomato_Price"), ("Fuel_Price","Veg_Price")]
-for kp in known_pairs:
-    if kp[0] in diff_all.columns and kp[1] in diff_all.columns:
-        if not any(p[0]==kp[0] and p[1]==kp[1] for p in strong_pairs):
-            r = diff_all[kp[0]].corr(diff_all[kp[1]])
-            strong_pairs.append((kp[0], kp[1], round(r, 3)))
-
-strong_pairs = sorted(strong_pairs, key=lambda x: abs(x[2]), reverse=True)[:6]
-print(f"  Strong pairs (on Δ): {[(p[0], p[1], p[2]) for p in strong_pairs]}")
-
-if strong_pairs:
-    MAX_LAG = 12
-    ncols = min(3, len(strong_pairs))
-    nrows = (len(strong_pairs) + ncols - 1) // ncols
-    fig_lag, axes_lag = plt.subplots(nrows, ncols,
-                                      figsize=(7*ncols, 5*nrows),
-                                      facecolor="#f8f9fa")
-    fig_lag.suptitle(
-        "Lag Correlation — Month-over-Month Δ Price (First Difference)\n"
-        "Positive lag = X leads Y  |  Negative lag = Y leads X\n"
-        "Using Δ Price removes price-level trends for cleaner signal",
-        fontsize=12, fontweight="bold", y=1.02)
-    axes_lag = np.array(axes_lag).flatten()
-
-    for ax, (col_x, col_y, static_r) in zip(axes_lag, strong_pairs):
-        lags_range = range(-MAX_LAG, MAX_LAG+1)
-        lag_corrs  = []
-        s_x = diff_all[col_x].dropna()
-        s_y = diff_all[col_y].dropna()
-        common_idx = s_x.index.intersection(s_y.index)
-        s_x = s_x[common_idx]; s_y = s_y[common_idx]
-
-        for lag in lags_range:
-            if lag > 0:
-                r = s_x.iloc[:-lag].corr(s_y.iloc[lag:])
-            elif lag < 0:
-                r = s_x.iloc[-lag:].corr(s_y.iloc[:lag])
-            else:
-                r = s_x.corr(s_y)
-            lag_corrs.append(r if not np.isnan(r) else 0)
-
-        lag_arr  = np.array(list(lags_range))
-        corr_arr = np.array(lag_corrs)
-        best_lag = lag_arr[np.argmax(np.abs(corr_arr))]
-        best_r   = corr_arr[np.argmax(np.abs(corr_arr))]
-
-        bar_colors = ["#e74c3c" if c < 0 else "#2ecc71" for c in corr_arr]
-        ax.set_facecolor("#fdfdfd")
-        ax.bar(lag_arr, corr_arr, color=bar_colors, alpha=0.75, width=0.7, edgecolor="white")
-        ax.axhline(0,    color="gray",    lw=0.8, ls="-")
-        ax.axhline( 0.35, color="#27ae60", lw=1.0, ls="--", alpha=0.6, label="r=±0.35")
-        ax.axhline(-0.35, color="#27ae60", lw=1.0, ls="--", alpha=0.6)
-        ax.axvline(best_lag, color="#e74c3c", lw=2.0, ls=":", alpha=0.9)
-
-        ax.set_title(
-            f"Δ{col_x}  →  Δ{col_y}\nStatic r={static_r:.2f}  |  Best lag={best_lag}m  r={best_r:.2f}",
-            fontsize=10, fontweight="bold")
-        ax.set_xlabel("Lag (months)", fontsize=9)
-        ax.set_ylabel("Pearson r  (on Δ)", fontsize=9)
-        ax.set_xlim(-MAX_LAG-0.5, MAX_LAG+0.5)
-        ax.set_ylim(-1.1, 1.1)
-        ax.grid(axis="y", linestyle="--", alpha=0.3)
-
-        if best_lag > 0:
-            lead_txt = f"Δ{col_x} leads Δ{col_y}\nby {best_lag} months"
-        elif best_lag < 0:
-            lead_txt = f"Δ{col_y} leads Δ{col_x}\nby {abs(best_lag)} months"
-        else:
-            lead_txt = "Simultaneous\nmovement"
-        ax.text(0.02, 0.97, lead_txt, transform=ax.transAxes,
-                fontsize=8, va="top", color="#2c3e50",
-                bbox=dict(boxstyle="round,pad=0.3", facecolor="#ecf0f1", alpha=0.8))
-        ax.legend(fontsize=7)
-
-    for ax in axes_lag[len(strong_pairs):]:
-        ax.set_visible(False)
-
-    plt.tight_layout()
-    plt.show()
 
 # ── 06 Rolling correlation ────────────────────────────────────────
 print("06 Rolling correlation...")
@@ -1092,7 +977,6 @@ print("="*65)
 
 all_accuracy  = []
 best_models   = {}
-rolling_results = []
 cv_results    = []
 phase4_preds  = {}
 
@@ -1227,17 +1111,6 @@ for tgt in forecast_targets:
                     if full_hp is not None: phase4_preds[col]["Hybrid_SARIMA_LSTM"] = full_hp
         except Exception as e: print(f"    Hybrid FAILED: {e}")
 
-    # ── 9 Rolling Walk-Forward ──────────────────────────────────
-    print(f"\n  [9] Rolling Walk-Forward SARIMA")
-    try:
-        rp, ra, rd = rolling_forecast_sarima(y, ds, FORECAST_MONTHS)
-        m9 = calculate_metrics(ra, rp, "Rolling SARIMA")
-        if m9["MAPE"] <= 500:
-            m9.update({"Model":"Rolling_SARIMA","Series":col,"AIC":"N/A"})
-            series_results.append(m9); all_accuracy.append(m9)
-            rolling_results.append({"col":col,"clr":tgt["color"],"dates":rd,"actual":ra,"predicted":rp})
-    except Exception as e: print(f"    FAILED: {e}")
-
     # ── Weighted Ensemble ────────────────────────────────────────
     valid_preds = {k: v for k, v in phase4_preds[col].items() if v is not None}
     if len(valid_preds) >= 2:
@@ -1330,7 +1203,6 @@ model_colors = {
     "LSTM"               : "#c0392b",
     "XGBoost"            : "#1abc9c",
     "RandomForest"       : "#6c5ce7",
-    "Rolling_SARIMA"     : "#2980b9",
     "Ensemble"           : "#f39c12",
     "Hybrid_SARIMA_LSTM" : "#00b894",
 }
@@ -1393,29 +1265,6 @@ for tgt in forecast_targets:
     ax_top.set_ylabel("Price (₹)", fontsize=9)
     ax_top.legend(fontsize=8, loc="upper left", ncol=2)
     fmt_ax(ax_top)
-    plt.tight_layout(); plt.show()
-
-# ══════════════════════════════════════════════════════════════════
-# ROLLING FORECAST CHART
-# ══════════════════════════════════════════════════════════════════
-if rolling_results:
-    print("09 Rolling forecast chart...")
-    fig_r, axes_r = plt.subplots(len(rolling_results), 1,
-                                  figsize=(13, 5*len(rolling_results)))
-    if len(rolling_results) == 1: axes_r = [axes_r]
-    fig_r.suptitle("Rolling Walk-Forward Forecast vs Actual",
-                   fontsize=13, fontweight="bold")
-    for ax, res in zip(axes_r, rolling_results):
-        ax.plot(res["dates"], res["actual"],    color=res["clr"], lw=2.0,
-                marker="o", ms=6, label="Actual")
-        ax.plot(res["dates"], res["predicted"], color="#e74c3c", lw=2.0,
-                marker="s", ms=6, ls="--", label="Predicted")
-        ax.fill_between(res["dates"], res["actual"], res["predicted"],
-                        alpha=0.15, color="gray", label="Error Area")
-        mr = calculate_metrics(res["actual"], res["predicted"])
-        ax.set_title(f"{res['col']} — Rolling  MAE={mr['MAE']:.2f}  MAPE={mr['MAPE']:.2f}%",
-                     fontsize=10, fontweight="bold")
-        ax.set_ylabel(res["col"], fontsize=9); ax.legend(fontsize=9); fmt_ax(ax, interval=1)
     plt.tight_layout(); plt.show()
 
 # ══════════════════════════════════════════════════════════════════
