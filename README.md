@@ -4,7 +4,7 @@
 ![XGBoost](https://img.shields.io/badge/XGBoost-ML-success)
 ![Prophet](https://img.shields.io/badge/Prophet-Time%20Series-orange)
 ![SARIMA](https://img.shields.io/badge/SARIMA-Forecasting-purple)
-![License](https://img.shields.io/badge/License-MIT-green)
+
 
 
 ## Project Overview
@@ -195,7 +195,7 @@ PricePulse/
 ├── forecasting_pipeline.py
 ├── requirements.txt
 ├── README.md
-└── LICENSE
+
 ```
 
 # 🚀 Installation
@@ -203,7 +203,7 @@ PricePulse/
 Clone the repository.
 
 ```bash
-git clone https://github.com/yourusername/PricePulse.git
+git clone https://github.com/suyaljagrati3/PricePulse.git
 ```
 
 Move into the project folder.
