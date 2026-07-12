@@ -248,7 +248,7 @@ streamlit run app.py
 ---
 
 
-# 👩‍💻 My Contribution
+# 👩‍💻My Contribution
 This project was developed as part of my undergraduate coursework.
 My primary contributions included:
 - Conducting a literature review on inflation forecasting and commodity price prediction.
@@ -260,12 +260,7 @@ My primary contributions included:
 
 ---
 
-# 📄 License
-This project is licensed under the MIT License.
-
----
-
-# 🙏 Acknowledgements
+# Acknowledgements
 This project was inspired by research in time-series forecasting and commodity price prediction. I studied multiple research papers to understand forecasting techniques, feature engineering, and evaluation strategies before designing this project.
 
 I would also like to thank my faculty and teammate for her collaboration throughout the project.
